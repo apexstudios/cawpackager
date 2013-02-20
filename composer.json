@@ -1,0 +1,21 @@
+{
+    "name": "apexstudios/cawpackager",
+    "description": "Package CaW up and more!",
+    "require": {
+        "aws/aws-sdk-php": "2.1.*",
+        "apexstudios/yamwlib": "*"
+    },
+    "authors": [
+        {
+            "name": "Anh Nhan Nguyen",
+            "email": "anhnhan@outlook.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/apexstudios/yamwlib"
+        }
+    ]
+}
