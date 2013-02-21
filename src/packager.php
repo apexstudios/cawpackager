@@ -12,7 +12,7 @@ $oldCwd = getcwd();
 
 if (count($arguments) === 0) { // Help!
     echo <<<EOT
-   Usage: packager pack <svn_repo_url>
+   Usage: packager pack <svn_repo_url> [revision]
 
        This always exports the latest version and zips it up for distribution.
 
@@ -24,12 +24,23 @@ if ($arguments[0] == "pack" && isset($arguments[1])) { // Do the packaging here
     $path = YamwLibs\Functions\TmpFunc::tempdir(sys_get_temp_dir());
     Cli::notice("Using $path as our cwd.");
 
-    try {
-        $exportCmd = new YamwLibs\Libs\Vcs\Svn\Commands\SvnExportCommand($path, $arguments[1] . '" "CaW/');
+    $repoUrl = $arguments[1];
 
-        if (isset($arguments[2]) && (int)$arguments[1] !== 0) {
-            $exportCmd->rev((int)$arguments[1]);
+    try {
+        $exportCmd = new YamwLibs\Libs\Vcs\Svn\Commands\SvnExportCommand($path, $repoUrl . '" "CaW/');
+
+        if (isset($arguments[2]) && (int)$arguments[2] !== 0) {
+            $revision = (int)$arguments[2];
+        } else {
+            $infoCommand = new \YamwLibs\Libs\Vcs\Svn\Commands\SvnInfoCommand($path, $repoUrl);
+            $infoOutput = YamwLibs\Libs\Vcs\Svn\SvnParser::parseInfoOutput(
+                $infoCommand->runCommand()
+            );
+
+            $revision = (int)$infoOutput["Revision"];
         }
+        $exportCmd->rev($revision);
+        Cli::notice("Exporting the repository at revision " . $revision);
 
         $output = $exportCmd->runCommand();
         Cli::notice("Successfully exported files from the repository!");
@@ -39,8 +50,9 @@ if ($arguments[0] == "pack" && isset($arguments[1])) { // Do the packaging here
 
         chdir($oldCwd);
 
-        $zipPath = $path . "/CaWPackageZip.zip";
-        $zipCwdPath = getcwd() . "/CaWPackageZip.zip";
+        $fileName = "/CaWPackageZip.rev{$revision}.zip";
+        $zipPath = $path . $fileName;
+        $zipCwdPath = getcwd() . $fileName;
         Cli::notice("Attempting to create zip file at " . $zipPath);
 
         //create the archive
@@ -65,7 +77,7 @@ if ($arguments[0] == "pack" && isset($arguments[1])) { // Do the packaging here
         }
 
         Cli::output("");
-        Cli::notice('The zip archive contains ',$zip->numFiles,' files with a status of ',$zip->status . PHP_EOL);
+        Cli::notice('The zip archive contains ' . $zip->numFiles . ' files with a status of ' . $zip->status . PHP_EOL);
 
         $zipClose = $zip->close();
 
@@ -85,6 +97,7 @@ if ($arguments[0] == "pack" && isset($arguments[1])) { // Do the packaging here
             Cli::notice("File copied to " . $zipCwdPath);
         } else {
             Cli::error("File could not be copied to " . $zipCwdPath);
+            Cli::output("Do it on your own.");
         }
     } catch (Exception $e) {
         echo $e->getMessage();
