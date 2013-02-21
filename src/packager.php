@@ -43,19 +43,37 @@ if ($arguments[0] == "pack" && isset($arguments[1])) { // Do the packaging here
         $zipPath = $path . "/CaWPackageZip.zip";
         $zipCwdPath = getcwd() . "/CaWPackageZip.zip";
         Cli::notice("Attempting to create zip file at " . $zipCwdPath);
-        $zipCreated = \YamwLibs\Libs\Archives\Zip::createZip($addedFiles, $zipCwdPath);
 
-        var_dump($zipCreated);
+        if (!touch($zipCwdPath)) {
+            Cli::fatal("File not writeable. Continueing is futile.");
+        }
 
-        if ($zipCreated) {
-            // copy($zipPath, $zipCwdPath);
-            Cli::success("Exported repository to zip file " . $zipCwdPath);
-        } else {
-            print_r($zipCreated);
-            Cli::fatal("Could not create Zip archive!");
+        //create the archive
+        $zip = new \ZipArchive();
+        $zipOpen = $zip->open($zipCwdPath, \ZipArchive::OVERWRITE);
+        if ($zipOpen !== true) {
+            var_dump($zipOpen);
+            Cli::fatal("Could not open zip file!");
+        }
+
+        //add the files
+        foreach ($addedFiles as $file) {
+            $zip->addFile($file, $file);
+        }
+        //debug
+        echo 'The zip archive contains ',$zip->numFiles,' files with a status of ',$zip->status . PHP_EOL;
+        //close the zip -- done!
+        $zipClose = $zip->close();
+
+        if ($zipClose !== true) {
+            var_dump($zipClose);
+            Cli::fatal("Error while closing.");
+        }
+
+        if (file_exists($zipCwdPath) !== true) {
+            Cli::fatal("File could not be created!");
         }
     } catch (Exception $e) {
-        // Stub
         echo $e->getMessage();
     }
 
