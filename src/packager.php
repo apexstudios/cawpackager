@@ -37,19 +37,11 @@ if ($arguments[0] == "pack" && isset($arguments[1])) { // Do the packaging here
         $parsedOutput = YamwLibs\Libs\Vcs\Svn\SvnParser::parseChangelistOutput($output);
         $addedFiles = $parsedOutput["added"];
 
-        /*foreach ($addedFiles as &$value) {
-            $value = $path . "/" . $value;
-        }*/
-
         chdir($oldCwd);
 
         $zipPath = $path . "/CaWPackageZip.zip";
         $zipCwdPath = getcwd() . "/CaWPackageZip.zip";
         Cli::notice("Attempting to create zip file at " . $zipPath);
-
-        /*if (!touch($zipCwdPath)) {
-            Cli::fatal("File not writeable. Continueing is futile.");
-        }*/
 
         //create the archive
         $zip = new \ZipArchive();
