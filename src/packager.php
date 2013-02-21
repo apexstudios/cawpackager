@@ -38,22 +38,20 @@ if ($arguments[0] == "pack" && isset($arguments[1])) { // Do the packaging here
             $value = $path . "/" . $value;
         }
 
-        $zipPath = "CaWPackageZip.zip";
-        Cli::notice("Attempting to create zip file at " . $zipPath);
+        chdir(__DIR__);
 
-        $zipFile = new ZipArchive();
-        $zipOpen = $zipFile->open($zipPath, ZipArchive::CREATE);
-        \YamwLibs\Libs\Archives\Zip::folderToZip($path, $zipFile);
-        $zipClose = $zipFile->close();
+        $zipPath = $path . "/CaWPackageZip.zip";
+        $zipCwdPath = getcwd() . "/CaWPackageZip.zip";
+        Cli::notice("Attempting to create zip file at " . $zipCwdPath);
+        $zipCreated = \YamwLibs\Libs\Archives\Zip::createZip($addedFiles, $zipCwdPath);
 
-        // $zipCreated = \YamwLibs\Libs\Archives\Zip::createZip($addedFiles, $zipPath);
+        var_dump($zipCreated);
 
-        if ($zipClose | $zipOpen) {
-            // $zipCwdPath = getcwd() . "/CaWPackageZip.zip";
-            // copy($path . "/CaWPackageZip.zip", $zipCwdPath);
-            Cli::success("Exported repository to zip file " . $zipPath);
+        if ($zipCreated) {
+            // copy($zipPath, $zipCwdPath);
+            Cli::success("Exported repository to zip file " . $zipCwdPath);
         } else {
-            print_r($addedFiles);
+            print_r($zipCreated);
             Cli::fatal("Could not create Zip archive!");
         }
     } catch (Exception $e) {
