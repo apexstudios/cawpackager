@@ -18,6 +18,7 @@ if (count($arguments) === 0) { // Help!
 
    More to come in the following weeks / months!
 EOT;
+    exit(0);
 }
 
 if ($arguments[0] == "pack" && isset($arguments[1])) { // Do the packaging here
