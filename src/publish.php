@@ -39,12 +39,17 @@ try {
         'Bucket' => $configObject->bucket,
         'Key'    => $file,
         'Body'   => fopen($file, 'r'),
-        'ACL'    => CannedAcl::PUBLIC_READ
+        'ACL'    => CannedAcl::AUTHENTICATED_READ
     ));
 
     Cli::success("File $file was successfully uploaded!");
     Cli::notice("I suspect that you may be able to download it here:");
     Cli::output("http://s3-eu-west-1.amazonaws.com/hcaw/" . $file);
+
+    $disposition = "attachment; filename=\"{$file}\"";
+    $request = $s3->get("{$configObject->bucket}/{$file}?response-content-disposition={$disposition}");
+    $url = $s3->createPresignedUrl($request, '+10 minutes');
+    echo "$url";
 } catch (S3Exception $exc) {
     echo $exc->getTraceAsString() . PHP_EOL;
     Cli::fatal("Upload failed!");
