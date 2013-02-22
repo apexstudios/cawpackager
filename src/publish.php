@@ -1,7 +1,6 @@
 <?php
 use YamwLibs\Libs\Cli\Cli;
 use Aws\Common\Aws;
-use Aws\S3\S3Client;
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\Enum\CannedAcl;
 
@@ -9,7 +8,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 array_shift($argv);
 $args = \YamwLibs\Libs\Cli\CliArgs::parseArgv($argv);
 
-$opts = $args[1];
 $arguments = $args[0];
 
 if (!isset($arguments[0])) {
@@ -17,8 +15,6 @@ if (!isset($arguments[0])) {
 }
 
 $file = $arguments[0];
-
-$oldCwd = getcwd();
 
 if (!file_exists(__DIR__ . "/config.json")) {
     Cli::fatal("Run `php config.php` first!");
