@@ -51,9 +51,9 @@ if ($arguments[0] == "pack" && isset($arguments[1])) { // Do the packaging here
 
         chdir($oldCwd);
 
-        $fileName = "/CaWPackageZip.rev{$revision}.zip";
-        $zipPath = $path . $fileName;
-        $zipCwdPath = getcwd() . $fileName;
+        $fileName = "CaWPackageZip.rev{$revision}.zip";
+        $zipPath = $path . DIRECTORY_SEPARATOR . $fileName;
+        $zipCwdPath = getcwd() . DIRECTORY_SEPARATOR . $fileName;
         Cli::notice("Attempting to create zip file at " . $zipPath);
 
         //create the archive
@@ -100,6 +100,8 @@ if ($arguments[0] == "pack" && isset($arguments[1])) { // Do the packaging here
             Cli::error("File could not be copied to " . $zipCwdPath);
             Cli::output("Do it on your own.");
         }
+
+        echo $fileName;
     } catch (Exception $e) {
         echo $e->getMessage();
     }
