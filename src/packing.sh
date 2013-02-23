@@ -4,6 +4,7 @@
 # Means the config.json exists
 
 REPO="https://some.repo/svn/"
+PHAB="https://phabricator.example.com/"
 
 PACK_OUTPUT=`php packager.php pack $REPO`
 
@@ -28,3 +29,5 @@ echo $PUBLISH_OUTPUT
 echo "Successfully published!"
 echo "The URL is"
 echo $URL
+
+echo "{ \"id\": \"172\", \"comments\":\"New build had been assembled. \n $URL \n\n Signing off! \" }" | arc call-conduit maniphest.update --conduit-uri=$PHAB
