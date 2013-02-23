@@ -50,3 +50,6 @@ try {
     echo $exc->getTraceAsString() . PHP_EOL;
     Cli::fatal("Upload failed!");
 }
+
+// Delete the file
+unlink($file);
