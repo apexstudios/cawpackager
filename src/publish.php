@@ -44,7 +44,7 @@ try {
 
     $disposition = "attachment; filename=\"{$file}\"";
     $request = $s3->get("{$configObject->bucket}/{$file}?response-content-disposition={$disposition}");
-    $url = $s3->createPresignedUrl($request, '+10 minutes');
+    $url = $s3->createPresignedUrl($request, '+240 minutes');
     echo "$url";
 } catch (S3Exception $exc) {
     echo $exc->getTraceAsString() . PHP_EOL;
