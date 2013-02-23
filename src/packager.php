@@ -91,7 +91,7 @@ if ($arguments[0] == "pack" && isset($arguments[1])) { // Do the packaging here
             Cli::fatal("File could not be created!");
         }
         Cli::output("");
-        Cli::success("Successfully created zip file at " . $zipPath);
+        Cli::success("Created zip file at " . $zipPath);
 
         $copyStatus = copy($zipPath, $zipCwdPath);
         if ($copyStatus === true) {
