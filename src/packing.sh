@@ -15,14 +15,16 @@ echo $PACK_OUTPUT
 
 FILENAME=`echo "$PACK_OUTPUT" | tail -n 1`
 
-PUBLISH_OUTPUT=`php publish.php $FILENAME`
-URL=`echo "$PUBLISH_OUTPUT" | tail -n 1`
-
 echo ""
 echo "Packed up repo!"
 echo ""
 echo "Publishing to S3"
 echo ""
 
+PUBLISH_OUTPUT=`php publish.php $FILENAME`
+URL=`echo "$PUBLISH_OUTPUT" | tail -n 1`
+
 echo $PUBLISH_OUTPUT
 echo "Successfully published!"
+echo "The URL is"
+echo $URL
