@@ -3,18 +3,10 @@
 # I assume you have already configured it correctly
 # Means the config.json exists
 
-REPO="https://some.repo/svn/"
-PHAB="https://phabricator.example.com/"
-
-PACK_OUTPUT=`php packager.php pack $REPO`
-
-echo "Packing of "
-echo $REPO
-echo ""
+PACK_OUTPUT=`php packager.php`
+FILENAME=`echo "$PACK_OUTPUT" | tail -n 1`
 
 echo $PACK_OUTPUT
-
-FILENAME=`echo "$PACK_OUTPUT" | tail -n 1`
 
 echo ""
 echo "Packed up repo!"
@@ -30,4 +22,12 @@ echo "Successfully published!"
 echo "The URL is"
 echo $URL
 
-echo "{ \"id\": \"172\", \"comments\":\"New build had been assembled. \n $URL \n\n Signing off! \" }" | arc call-conduit maniphest.update --conduit-uri=$PHAB
+ARC_INPUT="{ \"id\":\"172\", \"comments\":\"New build had been assembled. \\n Filename is: $FILENAME \\n \\n Link is: \\n $URL \\n \\n Signing off!\" }"
+
+echo ""
+echo ""
+echo $ARC_INPUT
+echo ""
+echo ""
+
+echo $ARC_INPUT | arc call-conduit maniphest.update
