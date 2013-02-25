@@ -14,7 +14,7 @@ echo ""
 echo "Publishing to S3"
 echo ""
 
-PUBLISH_OUTPUT=`php publish.php $FILENAME`
+PUBLISH_OUTPUT=`php publish.php "$FILENAME"`
 URL=`echo "$PUBLISH_OUTPUT" | tail -n 1`
 
 echo $PUBLISH_OUTPUT
@@ -24,12 +24,4 @@ echo $URL
 
 rm $FILENAME && echo "Deleted $FILENAME" ? echo "Could not delete $FILENAME"
 
-ARC_INPUT="{ \"id\":\"172\", \"comments\":\"New build had been assembled. \\n Filename is: $FILENAME \\n \\n Link is: \\n $URL \\n \\n Signing off!\" }"
-
-echo ""
-echo ""
-echo $ARC_INPUT
-echo ""
-echo ""
-
-echo $ARC_INPUT | arc call-conduit maniphest.update
+php post.php "$FILENAME"
