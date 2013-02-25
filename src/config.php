@@ -9,7 +9,7 @@ $arguments = $args[0];
 
 if (isset($arguments[0]) && $arguments[0] == "help") {
     echo <<<EOT
-   Usage: php config.php <bucket-name> <bucket-region> <key> <secret>
+   Usage: php config.php
 EOT;
     exit(0);
 }
@@ -19,23 +19,31 @@ function read()
     return trim(fread(STDIN, 99));
 }
 
-Cli::output("Please tell me the bucket name:");
-$bucketName = read();
+function readSomething($question)
+{
+    Cli::output($question);
+    return read();
+}
 
-Cli::output("Please tell me the region:");
-$bucketRegion = read();
+$bucketName = readSomething("Please tell me the bucket name:");
 
-Cli::output("Please tell me your AWS Access Key:");
-$key = read();
+$bucketRegion = readSomething("Please tell me the region:");
 
-Cli::output("Please tell me your secret (and your PIN, too):");
-$secret = read();
+$key = readSomething("Please tell me your AWS Access Key:");
+
+$secret = readSomething("Please tell me your secret (and your PIN, too):");
+
+$repoUrl = readSomething("Please tell me the location of the repository:");
+
+$phabricatorUrl = readSomething("Please tell me the location of Phabricator:");
 
 $configObj = (object)array(
     "bucket" => $bucketName,
     "region" => $bucketRegion,
     "key"    => $key,
     "secret" => $secret,
+    "repo"   => $repoUrl,
+    "phabricator" => $phabricatorUrl,
 );
 
 if (file_put_contents(__DIR__ . "/config.json", json_encode($configObj))) {
