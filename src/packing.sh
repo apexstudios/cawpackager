@@ -22,6 +22,8 @@ echo "Successfully published!"
 echo "The URL is"
 echo $URL
 
+rm $FILENAME && echo "Deleted $FILENAME" ? echo "Could not delete $FILENAME"
+
 ARC_INPUT="{ \"id\":\"172\", \"comments\":\"New build had been assembled. \\n Filename is: $FILENAME \\n \\n Link is: \\n $URL \\n \\n Signing off!\" }"
 
 echo ""

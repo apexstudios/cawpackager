@@ -38,9 +38,6 @@ try {
         'ACL'    => CannedAcl::AUTHENTICATED_READ
     ));
 
-    // Delete the file
-    unlink($file);
-
     Cli::success("File $file was uploaded!");
     Cli::notice("I suspect that you may be able to download it here:");
     Cli::output("http://s3-eu-west-1.amazonaws.com/hcaw/" . $file);
