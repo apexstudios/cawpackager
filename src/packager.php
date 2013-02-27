@@ -99,9 +99,6 @@ try {
     Cli::output("");
     Cli::success("Created zip file at " . $zipPath);
 
-    // Finally delete the temporary directory
-    \YamwLibs\Functions\FileFunc::delTree($path);
-
     $s3->putObject(array(
         'Bucket' => $configObject->bucket,
         'Key'    => $file,
@@ -129,6 +126,9 @@ try {
 
     $arcOutput = array();
     exec($arcCommand, $arcOutput);
+
+    // Finally delete the temporary directory
+    \YamwLibs\Functions\FileFunc::delTree($path);
 } catch (S3Exception $exc) {
     echo $exc->getTraceAsString() . PHP_EOL;
     Cli::error("Upload failed!");
@@ -145,7 +145,7 @@ $logJsonBlob = json_encode(array(
     "revision" => $revision,
     "zipPath" => $zipPath,
     "parsedFileList" => $parsedOutput,
-    "takeFileList" => $addedFiles,
+    "takenFileList" => $addedFiles,
     "actualFileList" => $fileList,
     "totalOutput" => $obContents,
     "exportOutput" => $exportOutput,
