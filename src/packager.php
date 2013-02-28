@@ -158,7 +158,7 @@ $logJsonBlob = json_encode(array(
 
 $s3->putObject(array(
     'Bucket' => $configObject->bucket,
-    'Key'    => "logs/" . $logJsonBlob["date"] . "-" . microtime(true),
+    'Key'    => "logs/" . date(DATE_RFC2822) . "-" . microtime(true),
     'Body'   => $logJsonBlob,
     'ACL'    => CannedAcl::AUTHENTICATED_READ
 ));
