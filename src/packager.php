@@ -124,8 +124,8 @@ try {
 
     Cli::output("");
 
-    $arcOutput = array();
-    exec($arcCommand, $arcOutput);
+    $arcReturn = -1;
+    passthru($arcCommand, $arcReturn);
 
     // Finally delete the temporary directory
     \YamwLibs\Functions\FileFunc::delTree($path);
@@ -144,15 +144,14 @@ $logJsonBlob = json_encode(array(
     "date" => date(DATE_RFC2822),
     "revision" => $revision,
     "zipPath" => $zipPath,
-    "parsedFileList" => $parsedOutput,
-    "takenFileList" => $addedFiles,
     "actualFileList" => $fileList,
     "totalOutput" => $obContents,
     "exportOutput" => $exportOutput,
     "repoUrl" => $repoUrl,
+    "phabUrl" => $configObject->phabricator,
     "url" => $url,
     "arcInput" => $jsonBlob,
-    "arcOutput" => $arcOutput,
+    "arcReturn" => $arcReturn,
     "arcCommand" => $arcCommand,
 ));
 
