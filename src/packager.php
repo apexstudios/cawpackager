@@ -102,7 +102,7 @@ try {
     $s3->putObject(array(
         'Bucket' => $configObject->bucket,
         'Key'    => $file,
-        'Body'   => fopen($file, 'r'),
+        'Body'   => fopen($zipPath, 'r'),
         'ACL'    => CannedAcl::AUTHENTICATED_READ
     ));
 
