@@ -112,52 +112,76 @@ try {
     Cli::notice("I suspect that you may be able to download it here:");
     Cli::output($url);
 
-    $jsonBlob = json_encode(array(
-        "url" => $url,
-    ));
+    $descriptorspec = array(
+        0 => array(
+            "pipe",
+            "r"), // stdin is a pipe that the child will read from
+        1 => array(
+            "pipe",
+            "w"), // stdout is a pipe that the child will write to
+        2 => array(
+            "pipe",
+            "w") // stderr is a file to write to
+    );
 
-    Cli::output("");
+    $pipes = array();
+    $arcProcess = proc_open('arc call-conduit packager.register', $descriptorspec, $pipes);
 
-    $arcCommand = "echo $jsonBlob | arc call-conduit packager.register";
+    if (is_resource($arcProcess)) {
+        Cli::notice("Successfully opened arc!");
+        $jsonBlob = json_encode(array(
+            "url" => $url,
+        ));
+        fwrite($pipes[0], $jsonBlob);
+        fclose($pipes[0]);
 
-    Cli::output($arcCommand);
+        $arcOutput = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+        echo $arcOutput;
 
-    Cli::output("");
+        $arcError = stream_get_contents($pipes[2]);
+        fclose($pipes[2]);
 
-    $arcReturn = -1;
-    passthru($arcCommand, $arcReturn);
+        $arcReturn = proc_close($arcProcess);
+
+        Cli::output($arcOutput);
+        echo "command returned $arcReturn";
+    } else {
+        throw new Exception("Failed to call arc!");
+    }
 
     // Finally delete the temporary directory
     \YamwLibs\Functions\FileFunc::delTree($path);
 } catch (S3Exception $exc) {
-    echo $exc->getTraceAsString() . PHP_EOL;
+    echo $exc->getMessage() . PHP_EOL;
     Cli::error("Upload failed!");
-} catch (Exception $e) {
-    echo $e->getMessage() . PHP_EOL;
+} catch (Exception $exc) {
+    echo $exc->getMessage() . PHP_EOL;
     Cli::error("Packaging process failed!");
 }
 
 $obContents = ob_get_clean();
 
 $logJsonBlob = json_encode(array(
-    "time" => time(),
-    "date" => date(DATE_RFC2822),
-    "revision" => $revision,
-    "zipPath" => $zipPath,
+    "time"           => time(),
+    "date"           => date(DATE_RFC2822),
+    "revision"       => $revision,
+    "zipPath"        => $zipPath,
     "actualFileList" => $fileList,
-    "totalOutput" => $obContents,
-    "exportOutput" => $exportOutput,
-    "repoUrl" => $repoUrl,
-    "phabUrl" => $configObject->phabricator,
-    "url" => $url,
-    "arcInput" => $jsonBlob,
-    "arcReturn" => $arcReturn,
-    "arcCommand" => $arcCommand,
-));
+    "totalOutput"    => $obContents,
+    "exportOutput"   => $exportOutput,
+    "repoUrl"        => $repoUrl,
+    "phabUrl"        => $configObject->phabricator,
+    "url"            => $url,
+    "arcInput"       => $jsonBlob,
+    "arcReturn"      => $arcReturn,
+    "arcOutput"      => $arcOutput,
+    "arcError"       => $arcError,
+    ));
 
 $s3->putObject(array(
     'Bucket' => $configObject->bucket,
-    'Key'    => "logs/" . date(DATE_RFC2822) . "-" . microtime(true),
+    'Key'    => "logs/" . date(DATE_RFC2822) . "-" . microtime(true) . ".json",
     'Body'   => $logJsonBlob,
     'ACL'    => CannedAcl::AUTHENTICATED_READ
 ));
