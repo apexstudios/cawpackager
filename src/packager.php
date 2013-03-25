@@ -45,6 +45,10 @@ try {
         }
     }
     $result = $result->getPath('Messages/*');
+    $sqs->deleteMessage(array(
+        'QueueUrl'          => 'https://sqs.us-east-1.amazonaws.com/830649155612/PackagingQueue',
+        'ReceiptHandle' => $result['ReceiptHandle'],
+    ));
     $msgBody = json_decode($result['Body']);
 
     $path = YamwLibs\Functions\TmpFunc::tempdir(sys_get_temp_dir());
