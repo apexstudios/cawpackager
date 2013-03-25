@@ -42,6 +42,8 @@ try {
         if (!count($result->getPath('Messages/*/Body')) && $loopCount < 50) {
             $loopCount++;
             continue;
+        } elseif (count($result->getPath('Messages/*/Body'))) {
+            break;
         } else {
             throw new Exception("Did not find any messages in queue.");
         }
