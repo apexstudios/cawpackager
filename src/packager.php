@@ -17,6 +17,10 @@ try {
     $oldCwd = getcwd();
     $configObject = json_decode(file_get_contents(__DIR__ . "/config.json"));
 
+    if (!$configObject) {
+        throw new Exception("You have to run `php config.php` first!");
+    }
+
     $configArray = array(
         'key'    => $configObject->key,
         'secret' => $configObject->secret,
@@ -25,29 +29,35 @@ try {
 
     $s3 = Aws::factory($configArray)->get('s3');
 
-    if (!$configObject) {
-        throw new Exception("You have to run `php config.php` first!");
+    $configArray['region'] = 'us-east-1';
+    $sqs = Aws::factory($configArray)->get('sqs');
+
+    $loopCount = 1;
+    for (;;) {
+        $result = $sqs->receiveMessage(array(
+            'QueueUrl'          => 'https://sqs.us-east-1.amazonaws.com/830649155612/PackagingQueue',
+            'WaitTimeSeconds'   => 20,
+            'VisibilityTimeout' => 100,
+        ));
+
+        if (!count($result) && $loopCount < 50) {
+            $loopCount++;
+            continue;
+        } else {
+            throw new Exception("Did not find any messages in queue.");
+        }
     }
+    $result = array_shift($result);
+    $msgBody = json_decode($result['Body']);
 
     $path = YamwLibs\Functions\TmpFunc::tempdir(sys_get_temp_dir());
     Cli::notice("Using $path as our cwd.");
 
-    $repoUrl = $configObject->repo;
+    $repoUrl = $msgBody->url();
 
     $exportCmd = new YamwLibs\Libs\Vcs\Svn\Commands\SvnExportCommand($path, $repoUrl . '" "CaW/');
-
-    if (isset($opts["r"]) && (int)$opts["r"] !== 0) {
-        $revision = (int)$opts["r"];
-    } else {
-        $infoCommand = new \YamwLibs\Libs\Vcs\Svn\Commands\SvnInfoCommand($path, $repoUrl);
-        $infoOutput = YamwLibs\Libs\Vcs\Svn\SvnParser::parseInfoOutput(
-            $infoCommand->runCommand()
-        );
-
-        $revision = (int)$infoOutput["Revision"];
-    }
-    $exportCmd->rev($revision);
-    Cli::notice("Exporting the repository at revision " . $revision);
+    $exportCmd->rev($msgBody->revision);
+    Cli::notice("Exporting the repository at revision " . $msgBody->revision);
 
     $exportOutput = $exportCmd->runCommand();
     Cli::notice("Successfully exported files from the repository!");
@@ -57,7 +67,7 @@ try {
 
     chdir($oldCwd);
 
-    $fileName = "CaWPackageZip.rev{$revision}.zip";
+    $fileName = $msgBody->filename;
     $zipPath = $path . DIRECTORY_SEPARATOR . $fileName;
     Cli::notice("Attempting to create zip file at " . $zipPath);
 
@@ -165,7 +175,7 @@ $obContents = ob_get_clean();
 $logJsonBlob = json_encode(array(
     "time"           => time(),
     "date"           => date(DATE_RFC2822),
-    "revision"       => $revision,
+    "revision"       => $msgBody->revision,
     "zipPath"        => $zipPath,
     "actualFileList" => $fileList,
     "totalOutput"    => $obContents,
@@ -181,7 +191,7 @@ $logJsonBlob = json_encode(array(
 
 $s3->putObject(array(
     'Bucket' => $configObject->bucket,
-    'Key'    => "logs/" . date(DATE_RFC2822) . "-" . microtime(true) . ".json",
+    'Key'    => "logs/" . date(DATE_RFC2822) . ".json",
     'Body'   => $logJsonBlob,
     'ACL'    => CannedAcl::AUTHENTICATED_READ
 ));
