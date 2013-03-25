@@ -40,14 +40,14 @@ try {
             'VisibilityTimeout' => 100,
         ));
 
-        if (!count($result->getPath('Messages/*')) && $loopCount < 50) {
+        if (!count($result->getPath('Messages/*/Body')) && $loopCount < 50) {
             $loopCount++;
             continue;
         } else {
             throw new Exception("Did not find any messages in queue.");
         }
     }
-    $result = array_shift($result->getPath('Messages/*'));
+    $result = array_shift($result);
     $msgBody = json_decode($result['Body']);
 
     $path = YamwLibs\Functions\TmpFunc::tempdir(sys_get_temp_dir());
