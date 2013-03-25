@@ -1,5 +1,8 @@
 <?php
 ob_start();
+ob_implicit_flush(true);
+
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use YamwLibs\Libs\Cli\Cli;
 use Aws\Common\Aws;
@@ -7,13 +10,6 @@ use Aws\S3\Exception\S3Exception;
 use Aws\S3\Enum\CannedAcl;
 
 try {
-    require_once __DIR__ . '/../vendor/autoload.php';
-    array_shift($argv);
-    $args = \YamwLibs\Libs\Cli\CliArgs::parseArgv($argv);
-
-    $opts = $args[1];
-    $arguments = $args[0];
-
     $oldCwd = getcwd();
     $configObject = json_decode(file_get_contents(__DIR__ . "/config.json"));
 
@@ -48,20 +44,27 @@ try {
             throw new Exception("Did not find any messages in queue.");
         }
     }
-    $result = array_shift($result);
+    $result = $result->getPath('Messages/*');
     $msgBody = json_decode($result['Body']);
 
     $path = YamwLibs\Functions\TmpFunc::tempdir(sys_get_temp_dir());
     Cli::notice("Using $path as our cwd.");
 
-    $repoUrl = $msgBody->url();
+    $repoUrl = $configObject->repo . $msgBody->url;
 
     $exportCmd = new YamwLibs\Libs\Vcs\Svn\Commands\SvnExportCommand($path, $repoUrl . '" "CaW/');
     $exportCmd->rev($msgBody->revision);
     Cli::notice("Exporting the repository at revision " . $msgBody->revision);
 
-    $exportOutput = $exportCmd->runCommand();
-    Cli::notice("Successfully exported files from the repository!");
+    $retVal = -55;
+    $exportOutput = $exportCmd->runCommand($retVal);
+
+    if ($retVal === 0) {
+        Cli::notice("Successfully exported files from the repository!");
+    } else {
+        var_dump($exportOutput);
+        throw new Exception("Failed to check out files from repository!");
+    }
 
     $parsedOutput = YamwLibs\Libs\Vcs\Svn\SvnParser::parseChangelistOutput($exportOutput);
     $addedFiles = $parsedOutput["added"];
@@ -172,6 +175,7 @@ try {
 }
 
 $obContents = ob_get_clean();
+echo $obContents;
 
 $logJsonBlob = json_encode(array(
     "time"           => time(),
