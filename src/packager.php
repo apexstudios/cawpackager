@@ -37,7 +37,6 @@ try {
         $result = $sqs->receiveMessage(array(
             'QueueUrl'          => 'https://sqs.us-east-1.amazonaws.com/830649155612/PackagingQueue',
             'WaitTimeSeconds'   => 20,
-            'VisibilityTimeout' => 100,
         ));
 
         if (!count($result->getPath('Messages/*/Body')) && $loopCount < 50) {
