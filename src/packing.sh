@@ -5,4 +5,4 @@
 
 php packager.php
 
-sudo shutdown -P +05
+sudo shutdown -P +00
