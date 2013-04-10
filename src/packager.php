@@ -143,7 +143,7 @@ try {
     );
 
     $pipes = array();
-    $arcProcess = proc_open('php ../../arcanist/bin/arc -- call-conduit packager.register', $descriptorspec, $pipes);
+    $arcProcess = proc_open('php ../../arcanist/scripts/arcanist.php -- call-conduit packager.register', $descriptorspec, $pipes);
 
     if (is_resource($arcProcess)) {
         Cli::notice("Successfully opened arc!");
