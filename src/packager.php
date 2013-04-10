@@ -26,12 +26,13 @@ try {
     $s3 = Aws::factory($configArray)->get('s3');
 
     $configArray['region'] = 'us-east-1';
+    $queueUrl = 'https://sqs.us-east-1.amazonaws.com/830649155612/PackagingQueue';
     $sqs = Aws::factory($configArray)->get('sqs');
 
     $loopCount = 1;
     for (;;) {
         $result = $sqs->receiveMessage(array(
-            'QueueUrl'          => 'https://sqs.us-east-1.amazonaws.com/830649155612/PackagingQueue',
+            'QueueUrl'          => $queueUrl,
             'WaitTimeSeconds'   => 20,
         ));
 
@@ -46,10 +47,12 @@ try {
     }
     $result = $result->getPath('Messages/*');
     $sqs->deleteMessage(array(
-        'QueueUrl'          => 'https://sqs.us-east-1.amazonaws.com/830649155612/PackagingQueue',
+        'QueueUrl'          => $queueUrl,
         'ReceiptHandle' => $result['ReceiptHandle'],
     ));
     $msgBody = json_decode($result['Body']);
+    Cli::notice("Received message from SQS.");
+    Cli::output("Will clone from $msgBody->url@$msgBody->revision");
 
     $path = YamwLibs\Functions\TmpFunc::tempdir(sys_get_temp_dir());
     Cli::notice("Using $path as our cwd.");
@@ -126,7 +129,7 @@ try {
 
     $url = "http://s3-" . $configObject->region . ".amazonaws.com/" . $configObject->bucket . "/" . $fileName;
 
-    Cli::success("File $file was uploaded!");
+    Cli::success("File $fileName was uploaded!");
     Cli::notice("I suspect that you may be able to download it here:");
     Cli::output($url);
 
@@ -196,7 +199,7 @@ $logJsonBlob = json_encode(array(
     "arcReturn"      => $arcReturn,
     "arcOutput"      => $arcOutput,
     "arcError"       => $arcError,
-    ));
+));
 
 $s3->putObject(array(
     'Bucket' => $configObject->bucket,
