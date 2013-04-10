@@ -184,7 +184,8 @@ try {
 $obContents = ob_get_clean();
 echo $obContents;
 
-$version = exec("git show --quiet");
+$version = array();
+exec("git show --quiet", $version);
 
 $logJsonBlob = json_encode(array(
     "time"           => time(),
