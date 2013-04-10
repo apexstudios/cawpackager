@@ -184,6 +184,8 @@ try {
 $obContents = ob_get_clean();
 echo $obContents;
 
+$version = exec("git show --quiet");
+
 $logJsonBlob = json_encode(array(
     "time"           => time(),
     "date"           => date(DATE_RFC2822),
@@ -199,6 +201,7 @@ $logJsonBlob = json_encode(array(
     "arcReturn"      => $arcReturn,
     "arcOutput"      => $arcOutput,
     "arcError"       => $arcError,
+    "version"        => $version,
 ));
 
 $s3->putObject(array(
